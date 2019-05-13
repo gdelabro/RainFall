@@ -1,0 +1,24 @@
+Sur le level1, ce n'est pas aussi simple que le level precedent. En regardant dans
+le code desassemble du programme level1, on se rend compte qu'il y a utilisation
+de la fonction gets donc on peut s'en servir pour faire un bufferOverflow.
+Toujours dans le code on peut voir un:        sub    $0x50,%esp
+ce qui correspond a la creation d'un espace de 80 octets dans la stack. Cependant,
+ce qui est envoyer dans le gets, c'est esp + 0x10
+(voir instru   lea 0x10(%esp),%eax)
+Donc on en deduit qu'on obtient un buffer de 64 characteres a remplir avec gets.
+On va donc commencer par injecter 64 characteres dans le gets pour qu'il remplisse le
+buffer et regarder ce qu'il se passe. Jusqu'a 76 characteres entre on ne touche
+a aucune variable exploitable dans la stack mais a partir de 77 characteres,
+on obtient soit un segfault, soit une invalid instruction. En fait, on est en train
+de toucher a la valeur sauvegarder de l'eip.
+Ensuite si on regarde dans le code desassemble, on vois qu'il y a une fonction
+jamais appelee par main qui s'appele run et qui lance un shell. On peut donc
+modifier l'eip sauvegarde pour qu'a la fin de la fonction main, le programme
+reprenne a l'addresse de run. Pour ca, il suffit de faire une simple ligne dans le
+shell qui permet de creer cette chaine de characteres:
+(python -c 'print "A"*76 +"\x44\x84\x04\x08" ' ; cat)  | ./level1
+Dans cette ligne, \x44\x84\x04\x08 correspond a l'addresse de run (renversee car
+little endian) et surtout faire attention au `; cat` car sans ca, on perd l'ecriture
+de stdin. Ensuite on arrive sur un shell sans prompt et il suffit simplement
+d'afficher le mot de passe du compte level2 avec:
+cat /home/user/level2/.pass

@@ -1,0 +1,16 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void	run()
+{
+	fwrite("Good... Wait what?i\n", 1, 19, stdout);
+	system("/bin/bash");
+}
+
+int main(int ac, char **av)
+{
+	char buf[64];
+
+	gets(buf);
+	return (1);
+}

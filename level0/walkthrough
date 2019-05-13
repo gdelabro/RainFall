@@ -1,0 +1,8 @@
+Pour le premier niveau, tres simple, on a un programme level0. Dans le dump en
+asm du main que l'on peut obtenir avec la commande:
+gdb -batch -ex 'file level0' -ex 'disassemble main'
+on vois un call de execve, cependant si on remonte au dessus on vois qu'il y a
+une sorte de if qui compare la valeur de atoi(argv[1]) avec 423. Il nous suffit
+donc de faire la commande:
+./level0 423
+Pour ensuite afficher le password du level suivant.
