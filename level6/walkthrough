@@ -1,0 +1,26 @@
+Dans ce challenge, on vois que la derniere fonction appellée est appellée par
+un pointeur sur fonction que l'on va essayer de modifier. Le code possede deux
+variables: l'une est un buffer malloc d'une taille de 64 octets et l'autre est
+un pointeur sur fonction malloc sur 4 octets. Etant donné que l'on a fait le
+projet malloc, on sait un minimum comment il fonctionne et on sait qu'il y a
+de grande chance pour que les deux variables soit allouée presque au meme endroit.
+On va donc grace a gdb chercher l'adresse de ces dernieres:
+
+gdb level6
+break *0x08048491
+break *0x080484a1
+run test
+i r  //recuperer la valeur de eax (normalement 0x0804a008)
+continue
+i r  //recuperer la valeur de eax (normalement 0x0804a050)
+quit
+
+Du coup avec un petit calcul on peut savoir a combien d'octets d'ecart les deux
+variables se trouvent l'une de l'autre: 0x0804a050 - 0x0804a008 = 0x48 = 72
+Ensuite, dans le code, on y apercois un strcpy qui va venir copier argv[1] dans
+notre buffer(donc buffer overflow facile etant donné que la taille de notre buffer
+est fixe). Il ne reste maintenant plus qua ecrire nos 72 characteres pour ecrire
+sur notre deuxieme variables. Etant donné que la variable est en fait un pointeur
+sur fonction appellé par la suite, on va simplement la remplir avec l'adresse de
+la fonction n  qui nous donne le flag suivant d'ou le payload suivant:
+./level6 `python -c 'print "A"*72 + "\x54\x84\x04\x08"'`
