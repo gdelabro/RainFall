@@ -1,0 +1,33 @@
+Dans cet exercice, lorsqu'on regarde le code decompile, on vois qu'il y a deux
+malloc principale dans lequel seront stockees deux adresses de deux autres malloc.
+Chaque malloc fait une taille de 8 octets et les adresses sont stockees dans les
+4 derniers octets. Ensuite, il y a deux strcpy: le premier va ecrire le premier
+argument dans la premiere adresse stockee, et le deuxieme va ecrire le deuxieme
+argument dans la deuxieme adresse stockee. Cependant on a vu a l'exo precedent
+que les malloc sont stockes les uns a cote des autres. On peut donc en deduire
+qu'en ecrivant un certain nombre de charactere en argument on peut ecrire sur
+les autres zone allouee. On va donc tenter de recuperer les adresse de la premiere
+adresse stocke et ladresse ou est stocke la deuxieme adresse stockee grace a gdb:
+
+break *0x08048550
+break *0x08048565
+run dqw dwq
+i r    //recuperer eax -> 0x0804a018
+continue
+i r    //recuperer eax -> 0x0804a028
+
+on vois donc qu'il y a 16 octets entre ces deux adresses mais rappelons nous que
+les adresses sont stockees dans les 4 derniers octets donc on a reellement 20
+characteres entre les deux adresses ce qui veut dire que si l'on ecris 20*"A"
+les prochains characteres ecriront sur la prochaine adresses ou l'on ecriras
+le deuxieme argument. Maintenant il suffit de recuperer l'adresse saugarder de
+l'eip avec gdb:
+
+break main
+run
+i f  //recuperer adresse de l'eip -> 0xbffff72c
+
+Maintenant on va juste creer notre payload pour ecrire a lendroit de l'eip saugarde
+l'adresse de la fonction m(qui nous donne le flag):
+
+./level7 `python -c 'print "A"*20 + "\x2c\xf7\xff\xbf"'` `python -c 'print "\xf4\x84\x04\x08"'`
